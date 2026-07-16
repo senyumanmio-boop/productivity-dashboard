@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Life Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Animasi halis untuk UI */
+        .transition-all { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+
+    <!-- HEADER / GREETING SECTION -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 id="greeting-text" class="text-2xl font-bold text-emerald-400">Selamat Beraktivitas!</h1>
+                <p id="live-clock" class="text-sm text-slate-400 mt-1"><i class="fa-regular fa-clock mr-1"></i> Memuat waktu...</p>
+            </div>
+            
+            <!-- Quick Lofi Music & Zen Mode -->
+            <div class="flex items-center gap-3 bg-slate-800/80 p-2 rounded-lg border border-slate-700">
+                <span class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-music mr-1 text-emerald-400"></i> Lofi Focus:</span>
+                <audio id="lofi-audio" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+                <button id="btn-play-music" onclick="toggleMusic()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold rounded text-white transition-all">
+                    Play
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- GRID UTAMA -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- KOLOM KIRI: FINANSIAL (TABUNGAN & BELANJA) -->
+            <div class="lg:col-span-1 bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400">
+                        <i class="fa-solid fa-wallet"></i> Saku Tracker
+                    </h2>
+                    <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-medium">Lokal Auto-Save</span>
+                </div>
+
+                <!-- Display Sisa Tabungan -->
+                <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-700 mb-6 text-center">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Sisa Tabunganmu</p>
+                    <p id="display-sisa" class="text-3xl font-extrabold text-emerald-400 mt-1">Rp 0</p>
+                </div>
+
+                <!-- Form Set Tabungan Awal -->
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Set Tabungan Awal</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="input-tabungan-awal" placeholder="Contoh: 500000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-white">
+                        <button onclick="setTabungan()" class="bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold px-4 rounded-lg transition-all">Set</button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-700 my-6">
+
+                <!-- Tambah Belanja Baru -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-slate-300 mb-3"><i class="fa-solid fa-cart-plus mr-1"></i> Catat Belanja Baru</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="belanja-nama" placeholder="Nama barang (cth: Futsal, jajan)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <input type="number" id="belanja-nominal" placeholder="Nominal (cth: 25000)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <button onclick="tambahBelanja()" class="w-full bg-red-600/80 hover:bg-red-600 text-sm font-semibold py-2 rounded-lg transition-all flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-minus-circle"></i> Kurangi Tabungan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Riwayat Belanja -->
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Riwayat Pengeluaran</h3>
+                    <div id="riwayat-belanja-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <!-- Rendered by JS -->
+                        <p class="text-xs text-slate-500 italic">Belum ada pengeluaran hari ini.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KOLOM TENGAH & KANAN: DAILY PLANNER & JADWAL 1 BULAN -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- DAILY PLANNER (HARI INI NGAPAIN AJA) -->
+                <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400">
+                                <i class="fa-solid fa-list-check"></i> Hari Ini Ngapain Aja?
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Lacak tugas, latihan, dan jadwal harianmu.</p>
+                        </div>
+                        
+                        <!-- Input Tugas Baru -->
+                        <div class="flex gap-2">
+                            <input type="text" id="input-tugas-baru" placeholder="Tulis tugas / agenda..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-emerald-500 w-full sm:w-64">
+                            <button onclick="tambahTugas()" class="bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold px-4 rounded-lg transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- List Tugas -->
+                    <div id="tugas-list" class="space-y-2 max-h-96 overflow-y-auto pr-2">
+                        <!-- Rendered by JS -->
+                        <p class="text-sm text-slate-500 italic text-center py-4">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</p>
+                    </div>
+                </div>
+
+                <!-- MONTHLY PLANNER (JADWAL 1 BULAN) -->
+                <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400 mb-4">
+                        <i class="fa-solid fa-calendar-days"></i> Agenda Bulanan (30 Hari ke Depan)
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <input type="date" id="agenda-tanggal" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-white">
+                        <input type="text" id="agenda-nama" placeholder="Contoh: Turnamen Futsal, Rapat OSIS" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 md:col-span-2">
+                    </div>
+                    <button onclick="tambahAgendaBulanan()" class="w-full bg-slate-700 hover:bg-slate-600 text-sm font-semibold py-2 rounded-lg transition-all">
+                        Masukkan ke Kalender
+                    </button>
+
+                    <div id="agenda-bulanan-list" class="mt-6 space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- Rendered by JS -->
+                        <p class="text-xs text-slate-500 italic">Belum ada agenda jangka panjang yang dicatat.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-8 text-xs text-slate-500 border-t border-slate-800 mt-12">
+        <p>Personal Life Dashboard © 2026. Dibuat dengan 💚 untuk produktivitas maksimal.</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- LOCAL STORAGE STATE MANAGEMENT ---
+        let state = {
+            tabunganAwal: Number(localStorage.getItem('tabunganAwal')) || 0,
+            belanjaList: JSON.parse(localStorage.getItem('belanjaList')) || [],
+            tugasList: JSON.parse(localStorage.getItem('tugasList')) || [],
+            agendaBulanan: JSON.parse(localStorage.getItem('agendaBulanan')) || []
+        };
+
+        function saveState() {
+            localStorage.setItem('tabunganAwal', state.tabunganAwal);
+            localStorage.setItem('belanjaList', JSON.stringify(state.belanjaList));
+            localStorage.setItem('tugasList', JSON.stringify(state.tugasList));
+            localStorage.setItem('agendaBulanan', JSON.stringify(state.agendaBulanan));
+            renderAll();
+        }
+
+        // --- FORMATTING UTILITIES ---
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderAll() {
+            renderFinansial();
+            renderTugas();
+            renderAgenda();
+        }
+
+        // 1. Finansial
+        function renderFinansial() {
+            const totalBelanja = state.belanjaList.reduce((sum, item) => sum + item.nominal, 0);
+            const sisaTabungan = state.tabunganAwal - totalBelanja;
+
+            document.getElementById('display-sisa').innerText = formatRupiah(sisaTabungan);
+            document.getElementById('input-tabungan-awal').value = state.tabunganAwal || '';
+
+            const riwayatContainer = document.getElementById('riwayat-belanja-list');
+            if (state.belanjaList.length === 0) {
+                riwayatContainer.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada pengeluaran.</p>`;
+            } else {
+                riwayatContainer.innerHTML = state.belanjaList.map((item, idx) => `
+                    <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 text-xs">
+                        <div>
+                            <p class="font-semibold text-slate-200">${item.nama}</p>
+                            <p class="text-[10px] text-slate-500">${item.tanggal}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-red-400 font-bold">-${formatRupiah(item.nominal)}</span>
+                            <button onclick="hapusBelanja(${idx})" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 2. Tugas / Planner
+        function renderTugas() {
+            const listContainer = document.getElementById('tugas-list');
+            if (state.tugasList.length === 0) {
+                listContainer.innerHTML = `<p class="text-sm text-slate-500 italic text-center py-4">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</p>`;
+            } else {
+                listContainer.innerHTML = state.tugasList.map((tugas, idx) => `
+                    <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-all">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${tugas.completed ? 'checked' : ''} onchange="toggleTugas(${idx})" class="w-4 h-4 text-emerald-600 bg-slate-900 border-slate-700 rounded focus:ring-emerald-500 focus:ring-2">
+                            <span class="text-sm ${tugas.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${tugas.teks}</span>
+                        </div>
+                        <button onclick="hapusTugas(${idx})" class="text-slate-500 hover:text-red-400 text-xs transition-all"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 3. Agenda Bulanan
+        function renderAgenda() {
+            const agendaContainer = document.getElementById('agenda-bulanan-list');
+            // Urutkan agenda berdasarkan tanggal terdekat
+            const sortedAgenda = [...state.agendaBulanan].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            if (sortedAgenda.length === 0) {
+                agendaContainer.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada agenda jangka panjang yang dicatat.</p>`;
+            } else {
+                agendaContainer.innerHTML = sortedAgenda.map((agenda, idx) => `
+                    <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-xs">
+                        <div>
+                            <p class="font-bold text-slate-200">${agenda.nama}</p>
+                            <p class="text-[10px] text-emerald-400 font-semibold mt-0.5"><i class="fa-regular fa-calendar mr-1"></i> ${agenda.tanggal}</p>
+                        </div>
+                        <button onclick="hapusAgenda(${idx})" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // --- INTERACTIVE ACTIONS ---
+        function setTabungan() {
+            const inputVal = document.getElementById('input-tabungan-awal').value;
+            state.tabunganAwal = Number(inputVal);
+            saveState();
+        }
+
+        function tambahBelanja() {
+            const nama = document.getElementById('belanja-nama').value.trim();
+            const nominal = Number(document.getElementById('belanja-nominal').value);
+
+            if (!nama || !nominal) return alert('Lengkapi nama barang dan nominal belanjaanmu!');
+
+            const tgl = new Date();
+            const formatTgl = `${tgl.getDate()}/${tgl.getMonth() + 1} - ${String(tgl.getHours()).padStart(2, '0')}:${String(tgl.getMinutes()).padStart(2, '0')}`;
+
+            state.belanjaList.push({ nama, nominal, tanggal: formatTgl });
+            
+            // Reset input
+            document.getElementById('belanja-nama').value = '';
+            document.getElementById('belanja-nominal').value = '';
+            saveState();
+        }
+
+        function hapusBelanja(idx) {
+            state.belanjaList.splice(idx, 1);
+            saveState();
+        }
+
+        function tambahTugas() {
+            const teks = document.getElementById('input-tugas-baru').value.trim();
+            if (!teks) return;
+
+            state.tugasList.push({ teks, completed: false });
+            document.getElementById('input-tugas-baru').value = '';
+            saveState();
+        }
+
+        function toggleTugas(idx) {
+            state.tugasList[idx].completed = !state.tugasList[idx].completed;
+            saveState();
+        }
+
+        // Hapus tugas yang selesai saja atau hapus satu per satu
+        function hapusTugas(idx) {
+            state.tugasList.splice(idx, 1);
+            saveState();
+        }
+
+        function tambahAgendaBulanan() {
+            const tanggal = document.getElementById('agenda-tanggal').value;
+            const nama = document.getElementById('agenda-nama').value.trim();
+
+            if (!tanggal || !nama) return alert('Silakan pilih tanggal dan isi nama agenda!');
+
+            state.agendaBulanan.push({ tanggal, nama });
+            document.getElementById('agenda-tanggal').value = '';
+            document.getElementById('agenda-nama').value = '';
+            saveState();
+        }
+
+        function hapusAgenda(idx) {
+            state.agendaBulanan.splice(idx, 1);
+            saveState();
+        }
+
+        // --- UTILITY SCRIPT (JAM & MUSIC) ---
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('id-ID', options);
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            document.getElementById('live-clock').innerHTML = `<i class="fa-regular fa-clock mr-1 text-emerald-400"></i> ${dateStr} - ${timeStr} WIB`;
+
+            // Ganti greeting dinamis berdasarkan jam
+            const jam = now.getHours();
+            let greeting = "";
+            if (jam >= 5 && jam < 11) greeting = "Selamat pagi! Siap produktif hari ini?";
+            else if (jam >= 11 && jam < 15) greeting = "Selamat siang! Jangan lupa istirahat sejenak.";
+            else if (jam >= 15 && jam < 18) greeting = "Selamat sore! Selesaikan aktivitasmu dengan baik.";
+            else greeting = "Selamat malam! Waktunya evaluasi hari ini.";
+
+            document.getElementById('greeting-text').innerText = greeting;
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('lofi-audio');
+            const btn = document.getElementById('btn-play-music');
+            if (audio.paused) {
+                audio.play();
+                btn.innerText = "Pause";
+                btn.className = "px-3 py-1 bg-red-600 hover:bg-red-500 text-xs font-semibold rounded text-white transition-all";
+            } else {
+                audio.pause();
+                btn.innerText = "Play";
+                btn.className = "px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold rounded text-white transition-all";
+            }
+        }
+
+        // Jalankan render awal & setup interval jam
+        setInterval(updateClock, 1000);
+        updateClock();
+        renderAll();
+    </script>
+</body>
+</html>
