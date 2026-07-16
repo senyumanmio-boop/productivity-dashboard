@@ -1,472 +1,279 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Life Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome untuk Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Animasi halis untuk UI */
-        .transition-all { transition: all 0.3s ease; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruang · Personal Life Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+<body>
 
-    <!-- HEADER / GREETING SECTION -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-                <h1 id="greeting-text" class="text-2xl font-bold text-emerald-400">Selamat Beraktivitas!</h1>
-                <p id="live-clock" class="text-sm text-slate-400 mt-1"><i class="fa-regular fa-clock mr-1"></i> Memuat waktu...</p>
-            </div>
-            
-            <!-- Quick Lofi Music & Zen Mode -->
-            <div class="flex items-center gap-3 bg-slate-800/80 p-2 rounded-lg border border-slate-700">
-                <span class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-music mr-1 text-emerald-400"></i> Lofi Focus:</span>
-                <audio id="lofi-audio" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
-                <button id="btn-play-music" onclick="toggleMusic()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold rounded text-white transition-all">
-                    Play
-                </button>
-            </div>
-        </div>
-    </header>
+<div class="app">
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <!-- GRID UTAMA -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- KOLOM KIRI: FINANSIAL (TABUNGAN & BELANJA) -->
-            <div class="lg:col-span-1 bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400">
-                        <i class="fa-solid fa-wallet"></i> Saku Tracker
-                    </h2>
-                    <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-medium">Lokal Auto-Save</span>
-                </div>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <span class="brand-name">Ruang</span>
+    </div>
 
-                <!-- Display Sisa Tabungan -->
-                <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-700 mb-6 text-center">
-                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Sisa Tabunganmu</p>
-                    <p id="display-sisa" class="text-3xl font-extrabold text-emerald-400 mt-1">Rp 0</p>
-                </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-target="beranda">
+        <svg viewBox="0 0 24 24" class="nav-icon"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+        <span>Beranda</span>
+      </button>
+      <button class="nav-item" data-target="saku">
+        <svg viewBox="0 0 24 24" class="nav-icon"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2"/><path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2Z"/><circle cx="16.5" cy="13.5" r="1.4"/></svg>
+        <span>Saku Tracker</span>
+      </button>
+      <button class="nav-item" data-target="tugas">
+        <svg viewBox="0 0 24 24" class="nav-icon"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 2.5 2.5L16 9"/></svg>
+        <span>Tugas Harian</span>
+      </button>
+      <button class="nav-item" data-target="agenda">
+        <svg viewBox="0 0 24 24" class="nav-icon"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg>
+        <span>Agenda Bulanan</span>
+      </button>
+      <button class="nav-item" data-target="fokus">
+        <svg viewBox="0 0 24 24" class="nav-icon"><path d="M4 11a8 8 0 0 1 16 0v6a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h3M4 17v-6a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg>
+        <span>Fokus &amp; Lofi</span>
+      </button>
+      <button class="nav-item" data-target="evaluator">
+        <svg viewBox="0 0 24 24" class="nav-icon"><path d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1H9l-4.5 4V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z"/><circle cx="8.5" cy="11" r=".8"/><circle cx="12" cy="11" r=".8"/><circle cx="15.5" cy="11" r=".8"/></svg>
+        <span>Evaluator Bot</span>
+      </button>
+    </nav>
 
-                <!-- Form Set Tabungan Awal -->
-                <div class="mb-6">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Set Tabungan Awal</label>
-                    <div class="flex gap-2">
-                        <input type="number" id="input-tabungan-awal" placeholder="Contoh: 500000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-white">
-                        <button onclick="setTabungan()" class="bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold px-4 rounded-lg transition-all">Set</button>
-                    </div>
-                </div>
+    <div class="mini-player" id="miniPlayer">
+      <button class="mini-play" id="miniPlayBtn" aria-label="Putar lofi">
+        <svg viewBox="0 0 24 24" class="icon-play"><path d="M7 5.5v13l11-6.5Z"/></svg>
+        <svg viewBox="0 0 24 24" class="icon-pause" hidden><path d="M7 5.5h3.2v13H7ZM13.8 5.5H17v13h-3.2Z"/></svg>
+      </button>
+      <div class="mini-meta">
+        <span class="mini-title">Lofi Focus</span>
+        <span class="mini-sub">Ketukan pelan untuk fokus</span>
+      </div>
+      <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </div>
+  </aside>
 
-                <hr class="border-slate-700 my-6">
+  <!-- ===== MOBILE TOPBAR ===== -->
+  <header class="mobile-topbar">
+    <span class="brand-mark">◆</span>
+    <span class="brand-name">Ruang</span>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Buka menu">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </header>
 
-                <!-- Tambah Belanja Baru -->
-                <div class="mb-6">
-                    <h3 class="text-sm font-bold text-slate-300 mb-3"><i class="fa-solid fa-cart-plus mr-1"></i> Catat Belanja Baru</h3>
-                    <div class="space-y-3">
-                        <input type="text" id="belanja-nama" placeholder="Nama barang (cth: Futsal, jajan)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                        <input type="number" id="belanja-nominal" placeholder="Nominal (cth: 25000)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                        <button onclick="tambahBelanja()" class="w-full bg-red-600/80 hover:bg-red-600 text-sm font-semibold py-2 rounded-lg transition-all flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-minus-circle"></i> Kurangi Tabungan
-                        </button>
-                    </div>
-                </div>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="content">
 
-                <!-- Riwayat Belanja -->
-                <div>
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Riwayat Pengeluaran</h3>
-                    <div id="riwayat-belanja-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <!-- Rendered by JS -->
-                        <p class="text-xs text-slate-500 italic">Belum ada pengeluaran hari ini.</p>
-                    </div>
-                </div>
-            </div>
+    <!-- ---------- BERANDA ---------- -->
+    <section class="panel is-active" id="beranda">
+      <div class="glow-header">
+        <p class="eyebrow" id="dateLine">Memuat tanggal…</p>
+        <h1 class="greeting" id="greetingText">Selamat beraktivitas</h1>
+        <p class="clock" id="clockText">--:--:--</p>
+      </div>
 
-            <!-- KOLOM TENGAH & KANAN: DAILY PLANNER & JADWAL 1 BULAN -->
-            <div class="lg:col-span-2 space-y-8">
-                
-                <!-- DAILY PLANNER (HARI INI NGAPAIN AJA) -->
-                <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400">
-                                <i class="fa-solid fa-list-check"></i> Hari Ini Ngapain Aja?
-                            </h2>
-                            <p class="text-xs text-slate-400 mt-1">Lacak tugas, latihan, dan jadwal harianmu.</p>
-                        </div>
-                        
-                        <!-- Input Tugas Baru -->
-                        <div class="flex gap-2">
-                            <input type="text" id="input-tugas-baru" placeholder="Tulis tugas / agenda..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-emerald-500 w-full sm:w-64">
-                            <button onclick="tambahTugas()" class="bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold px-4 rounded-lg transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-plus"></i> Tambah
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- List Tugas -->
-                    <div id="tugas-list" class="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        <!-- Rendered by JS -->
-                        <p class="text-sm text-slate-500 italic text-center py-4">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</p>
-                    </div>
-                </div>
-
-                <!-- MONTHLY PLANNER (JADWAL 1 BULAN) -->
-                <div class="bg-slate-800/50 border border-slate-700/80 rounded-2xl p-6 backdrop-blur">
-                    <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400 mb-4">
-                        <i class="fa-solid fa-calendar-days"></i> Agenda Bulanan (30 Hari ke Depan)
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <input type="date" id="agenda-tanggal" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-white">
-                        <input type="text" id="agenda-nama" placeholder="Contoh: Turnamen Futsal, Rapat OSIS" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 md:col-span-2">
-                    </div>
-                    <button onclick="tambahAgendaBulanan()" class="w-full bg-slate-700 hover:bg-slate-600 text-sm font-semibold py-2 rounded-lg transition-all">
-                        Masukkan ke Kalender
-                    </button>
-
-                    <div id="agenda-bulanan-list" class="mt-6 space-y-2 max-h-60 overflow-y-auto pr-1">
-                        <!-- Rendered by JS -->
-                        <p class="text-xs text-slate-500 italic">Belum ada agenda jangka panjang yang dicatat.</p>
-                    </div>
-                </div>
-<!-- Bagian Saku Tracker & Belanja -->
-<div class="saku-tracker">
-    <h3>SISA TABUNGANMU</h3>
-    <h1 id="total-tabungan">Rp 0</h1>
-    
-    <input type="number" id="input-awal" placeholder="Contoh: 500000">
-    <button id="btn-set-awal">Set</button>
-
-    <h4>Catat Belanja Baru</h4>
-    <input type="text" id="nama-barang" placeholder="Nama barang (cth: Futsal)">
-    <input type="number" id="nominal-belanja" placeholder="Nominal (cth: 25000)">
-    <button id="btn-kurang-tabungan" class="btn-danger">- Kurang Tabungan</button>
-</div>
-
-<!-- Bagian To-Do List Harian -->
-<div class="hari-ini">
-    <h3>Hari Ini Ngapain Aja?</h3>
-    <input type="text" id="input-tugas" placeholder="Tulis tugas / agenda...">
-    <button id="btn-tambah-tugas">+ Tambah</button>
-    <ul id="list-tugas">
-        <!-- Tugas akan muncul di sini -->
-    </ul>
-</div>
-
-<!-- Bagian Agenda Bulanan -->
-<div class="agenda-bulanan">
-    <h3>Agenda Bulanan (30 Hari ke Depan)</h3>
-    <input type="date" id="tanggal-agenda">
-    <input type="text" id="nama-agenda" placeholder="Contoh: Turnamen Futsal, Rapat OSIS">
-    <button id="btn-tambah-agenda">Masukkan ke Kalender</button>
-    <ul id="list-agenda">
-        <!-- Agenda akan muncul di sini -->
-    </ul>
-</div>
-            </div>
-            <!-- Gunakan layout grid atau flex yang sudah ada di dashboard-mu -->
-<div class="dashboard-container">
-    
-    <!-- Kolom Kiri: Saku Tracker -->
-    <div class="card saku-tracker-card">
-        <div class="card-header">
-            <span class="icon">💰</span> <h3>Saku Tracker</h3>
-            <span class="badge-status">Lokal Auto-Save</span>
-        </div>
-        <div class="balance-box">
-            <p class="label">SISA TABUNGANMU</p>
-            <h1 id="display-saldo">Rp 0</h1>
-        </div>
-        
-        <div class="input-group-row">
-            <input type="number" id="input-saldo-awal" placeholder="Contoh: 500000" class="custom-input">
-            <button id="btn-set-saldo" class="btn-primary">Set</button>
+      <div class="grid-overview">
+        <div class="card stat-card">
+          <span class="stat-label">Sisa Tabungan</span>
+          <span class="stat-value mono" id="overviewBalance">Rp 0</span>
+          <span class="stat-foot" id="overviewBalanceFoot">Belum diatur</span>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="form-belanja">
-            <h4>🛒 Catat Belanja Baru</h4>
-            <input type="text" id="belanja-nama" placeholder="Nama barang (cth: Futsal, jajan)" class="custom-input">
-            <input type="number" id="belanja-nominal" placeholder="Nominal (cth: 25000)" class="custom-input">
-            <button id="btn-potong-saldo" class="btn-danger">
-                <span class="icon">➖</span> Kurangi Tabungan
-            </button>
+        <div class="card stat-card ring-card">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 100 100" class="ring-svg">
+              <circle cx="50" cy="50" r="42" class="ring-track"/>
+              <circle cx="50" cy="50" r="42" class="ring-fill" id="ringFill"/>
+            </svg>
+            <span class="ring-num" id="ringPercent">0%</span>
+          </div>
+          <div class="ring-meta">
+            <span class="stat-label">Progress Tugas Hari Ini</span>
+            <span class="stat-foot" id="ringFoot">0 dari 0 selesai</span>
+          </div>
         </div>
 
-        <div class="divider"></div>
-        
-        <h4>History Pengeluaran</h4>
-        <ul id="list-riwayat" class="log-list">
-            <!-- Riwayat belanja masuk sini -->
-            <li class="empty-state">Belum ada pengeluaran.</li>
+        <div class="card stat-card">
+          <span class="stat-label">Agenda Mendatang</span>
+          <span class="stat-value" id="overviewAgendaCount">0</span>
+          <span class="stat-foot" id="overviewAgendaFoot">dalam 30 hari ke depan</span>
+        </div>
+      </div>
+
+      <div class="card upcoming-card">
+        <div class="card-head">
+          <h2>Agenda Terdekat</h2>
+        </div>
+        <ul class="upcoming-list" id="upcomingList">
+          <li class="empty-line">Belum ada agenda yang dicatat.</li>
         </ul>
-    </div>
+      </div>
+    </section>
 
-    <!-- Kolom Kanan Atas: To-Do List -->
-    <div class="card todo-card">
-        <div class="card-header">
-            <span class="icon">📋</span> <h3>Hari Ini Ngapain Aja?</h3>
+    <!-- ---------- SAKU TRACKER ---------- -->
+    <section class="panel" id="saku">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Saku Tracker</p>
+          <h2>Kelola uang jajanmu</h2>
         </div>
-        <p class="subtitle">Lacat tugas, latihan, dan jadwal harianmu.</p>
-        <div class="input-group-row">
-            <input type="text" id="input-tugas" placeholder="Tulis tugas / agenda..." class="custom-input">
-            <button id="btn-tambah-tugas" class="btn-primary">+ Tambah</button>
+        <span class="tag-autosave">Tersimpan otomatis di perangkat ini</span>
+      </div>
+
+      <div class="saku-layout">
+        <div class="card balance-card">
+          <span class="stat-label">Sisa Tabunganmu</span>
+          <span class="stat-value mono big" id="balanceDisplay">Rp 0</span>
+
+          <div class="inline-form" id="setBalanceForm">
+            <input type="number" id="initialBalanceInput" placeholder="Set tabungan awal (Rp)" min="0">
+            <button class="btn btn-amber" id="setBalanceBtn">Set</button>
+          </div>
+
+          <form class="stacked-form" id="expenseForm">
+            <p class="form-label">Catat Belanja Baru</p>
+            <input type="text" id="expenseDesc" placeholder="Contoh: Makan siang" required>
+            <input type="number" id="expenseAmount" placeholder="Jumlah (Rp)" min="1" required>
+            <button type="submit" class="btn btn-coral">− Kurangi Tabungan</button>
+          </form>
         </div>
-        <ul id="list-tugas" class="todo-list">
-            <!-- Item daftar tugas -->
+
+        <div class="card receipt-card">
+          <div class="card-head">
+            <h3>Riwayat Pengeluaran</h3>
+          </div>
+          <div class="receipt" id="receiptBody">
+            <p class="empty-line">Belum ada pengeluaran tercatat.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- TUGAS HARIAN ---------- -->
+    <section class="panel" id="tugas">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Hari Ini Ngapain Aja?</p>
+          <h2>Lacak tugas, latihan, dan jadwal harianmu</h2>
+        </div>
+      </div>
+
+      <div class="card task-card">
+        <form class="task-form" id="taskForm">
+          <input type="text" id="taskInput" placeholder="Tulis tugas, latihan, atau jadwal baru…" required>
+          <select id="taskCategory">
+            <option value="tugas">Tugas</option>
+            <option value="latihan">Latihan</option>
+            <option value="jadwal">Jadwal</option>
+          </select>
+          <button type="submit" class="btn btn-amber">+ Tambah</button>
+        </form>
+
+        <div class="task-progress-row">
+          <div class="task-progress-track"><div class="task-progress-fill" id="taskProgressFill"></div></div>
+          <span class="task-progress-label" id="taskProgressLabel">0 / 0 selesai</span>
+        </div>
+
+        <ul class="task-list" id="taskList">
+          <li class="empty-line">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</li>
         </ul>
-    </div>
+      </div>
+    </section>
 
-    <!-- Kolom Kanan Bawah: Agenda Bulanan -->
-    <div class="card agenda-card">
-        <div class="card-header">
-            <span class="icon">📅</span> <h3>Agenda Bulanan (30 Hari ke Depan)</h3>
+    <!-- ---------- AGENDA BULANAN ---------- -->
+    <section class="panel" id="agenda">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Agenda Bulanan</p>
+          <h2>30 hari ke depan</h2>
         </div>
-        <div class="input-group-grid">
-            <input type="date" id="agenda-tanggal" class="custom-input">
-            <input type="text" id="agenda-nama" placeholder="Contoh: Turnamen Futsal, Rapat OSIS" class="custom-input">
-        </div>
-        <button id="btn-tambah-agenda" class="btn-secondary-full">Masukkan ke Kalender</button>
-        <ul id="list-agenda" class="agenda-list">
-            <!-- Agenda jangka panjang -->
+      </div>
+
+      <div class="card">
+        <form class="agenda-form" id="agendaForm">
+          <input type="text" id="agendaInput" placeholder="Nama agenda / rencana…" required>
+          <input type="date" id="agendaDate" required>
+          <button type="submit" class="btn btn-amber">Masukkan ke Kalender</button>
+        </form>
+
+        <ul class="agenda-list" id="agendaList">
+          <li class="empty-line">Belum ada agenda jangka panjang yang dicatat.</li>
         </ul>
-    </div>
+      </div>
+    </section>
 
+    <!-- ---------- FOKUS & LOFI ---------- -->
+    <section class="panel" id="fokus">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Fokus &amp; Lofi</p>
+          <h2>Temani waktu fokusmu</h2>
+        </div>
+      </div>
+
+      <div class="fokus-layout">
+        <div class="card player-card">
+          <span class="stat-label">Lofi Focus</span>
+          <div class="vinyl" id="vinyl">
+            <div class="vinyl-inner"></div>
+          </div>
+          <button class="btn btn-amber wide" id="playBtn">▶ Putar</button>
+          <audio id="audio" loop preload="none">
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+          </audio>
+        </div>
+
+        <div class="card timer-card">
+          <span class="stat-label">Sesi Fokus (Pomodoro)</span>
+          <span class="timer-display mono" id="timerDisplay">25:00</span>
+          <div class="timer-controls">
+            <button class="btn btn-amber" id="timerStartBtn">Mulai</button>
+            <button class="btn btn-ghost" id="timerResetBtn">Reset</button>
+          </div>
+          <div class="timer-modes">
+            <button class="mode-btn is-active" data-mins="25">Fokus 25m</button>
+            <button class="mode-btn" data-mins="5">Jeda 5m</button>
+            <button class="mode-btn" data-mins="15">Jeda 15m</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- EVALUATOR BOT ---------- -->
+    <section class="panel" id="evaluator">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Evaluator Bot</p>
+          <h2>Ngobrol soal progress harianmu</h2>
+        </div>
+        <span class="tag-online">● Online</span>
+      </div>
+
+      <div class="card chat-card">
+        <div class="chat-log" id="chatLog">
+          <div class="chat-msg bot">
+            <span class="chat-avatar">🤖</span>
+            <p>Halo! Saya asisten evaluasimu. Ada progress apa hari ini? Ketik "evaluasi" untuk aku cek data tugas &amp; tabunganmu.</p>
+          </div>
+        </div>
+        <form class="chat-form" id="chatForm">
+          <input type="text" id="chatInput" placeholder="Tulis pesan…" autocomplete="off" required>
+          <button type="submit" class="btn btn-amber">Kirim</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
 </div>
 
-<!-- =============== FITUR BOT ASSISTANT CHAT =============== -->
-<div class="bot-chat-container" id="bot-widget">
-    <div class="bot-header" onclick="toggleBotChat()">
-        <div class="bot-avatar">🤖</div>
-        <div class="bot-info">
-            <h4>Evaluator Bot</h4>
-            <span class="status-dot"></span> <small>Online</small>
-        </div>
-        <button class="btn-minimize">▼</button>
-    </div>
-    <div class="bot-body" id="bot-messages">
-        <div class="msg bot">Halo! Saya asisten evaluasimu. Ada progress apa hari ini?</div>
-    </div>
-    <div class="bot-footer">
-        <input type="text" id="bot-input" placeholder="Tanya bot atau evaluasi hari ini...">
-        <button id="btn-send-bot">Kirim</button>
-    </div>
-</div>
-        </div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="text-center py-8 text-xs text-slate-500 border-t border-slate-800 mt-12">
-        <p>Personal Life Dashboard © 2026. Dibuat dengan 💚 untuk produktivitas maksimal.</p>
-    </footer>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // --- LOCAL STORAGE STATE MANAGEMENT ---
-        let state = {
-            tabunganAwal: Number(localStorage.getItem('tabunganAwal')) || 0,
-            belanjaList: JSON.parse(localStorage.getItem('belanjaList')) || [],
-            tugasList: JSON.parse(localStorage.getItem('tugasList')) || [],
-            agendaBulanan: JSON.parse(localStorage.getItem('agendaBulanan')) || []
-        };
-
-        function saveState() {
-            localStorage.setItem('tabunganAwal', state.tabunganAwal);
-            localStorage.setItem('belanjaList', JSON.stringify(state.belanjaList));
-            localStorage.setItem('tugasList', JSON.stringify(state.tugasList));
-            localStorage.setItem('agendaBulanan', JSON.stringify(state.agendaBulanan));
-            renderAll();
-        }
-
-        // --- FORMATTING UTILITIES ---
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-        }
-
-        // --- RENDER FUNCTIONS ---
-        function renderAll() {
-            renderFinansial();
-            renderTugas();
-            renderAgenda();
-        }
-
-        // 1. Finansial
-        function renderFinansial() {
-            const totalBelanja = state.belanjaList.reduce((sum, item) => sum + item.nominal, 0);
-            const sisaTabungan = state.tabunganAwal - totalBelanja;
-
-            document.getElementById('display-sisa').innerText = formatRupiah(sisaTabungan);
-            document.getElementById('input-tabungan-awal').value = state.tabunganAwal || '';
-
-            const riwayatContainer = document.getElementById('riwayat-belanja-list');
-            if (state.belanjaList.length === 0) {
-                riwayatContainer.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada pengeluaran.</p>`;
-            } else {
-                riwayatContainer.innerHTML = state.belanjaList.map((item, idx) => `
-                    <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 text-xs">
-                        <div>
-                            <p class="font-semibold text-slate-200">${item.nama}</p>
-                            <p class="text-[10px] text-slate-500">${item.tanggal}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-red-400 font-bold">-${formatRupiah(item.nominal)}</span>
-                            <button onclick="hapusBelanja(${idx})" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // 2. Tugas / Planner
-        function renderTugas() {
-            const listContainer = document.getElementById('tugas-list');
-            if (state.tugasList.length === 0) {
-                listContainer.innerHTML = `<p class="text-sm text-slate-500 italic text-center py-4">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</p>`;
-            } else {
-                listContainer.innerHTML = state.tugasList.map((tugas, idx) => `
-                    <div class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-all">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${tugas.completed ? 'checked' : ''} onchange="toggleTugas(${idx})" class="w-4 h-4 text-emerald-600 bg-slate-900 border-slate-700 rounded focus:ring-emerald-500 focus:ring-2">
-                            <span class="text-sm ${tugas.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${tugas.teks}</span>
-                        </div>
-                        <button onclick="hapusTugas(${idx})" class="text-slate-500 hover:text-red-400 text-xs transition-all"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // 3. Agenda Bulanan
-        function renderAgenda() {
-            const agendaContainer = document.getElementById('agenda-bulanan-list');
-            // Urutkan agenda berdasarkan tanggal terdekat
-            const sortedAgenda = [...state.agendaBulanan].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-
-            if (sortedAgenda.length === 0) {
-                agendaContainer.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada agenda jangka panjang yang dicatat.</p>`;
-            } else {
-                agendaContainer.innerHTML = sortedAgenda.map((agenda, idx) => `
-                    <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-xs">
-                        <div>
-                            <p class="font-bold text-slate-200">${agenda.nama}</p>
-                            <p class="text-[10px] text-emerald-400 font-semibold mt-0.5"><i class="fa-regular fa-calendar mr-1"></i> ${agenda.tanggal}</p>
-                        </div>
-                        <button onclick="hapusAgenda(${idx})" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // --- INTERACTIVE ACTIONS ---
-        function setTabungan() {
-            const inputVal = document.getElementById('input-tabungan-awal').value;
-            state.tabunganAwal = Number(inputVal);
-            saveState();
-        }
-
-        function tambahBelanja() {
-            const nama = document.getElementById('belanja-nama').value.trim();
-            const nominal = Number(document.getElementById('belanja-nominal').value);
-
-            if (!nama || !nominal) return alert('Lengkapi nama barang dan nominal belanjaanmu!');
-
-            const tgl = new Date();
-            const formatTgl = `${tgl.getDate()}/${tgl.getMonth() + 1} - ${String(tgl.getHours()).padStart(2, '0')}:${String(tgl.getMinutes()).padStart(2, '0')}`;
-
-            state.belanjaList.push({ nama, nominal, tanggal: formatTgl });
-            
-            // Reset input
-            document.getElementById('belanja-nama').value = '';
-            document.getElementById('belanja-nominal').value = '';
-            saveState();
-        }
-
-        function hapusBelanja(idx) {
-            state.belanjaList.splice(idx, 1);
-            saveState();
-        }
-
-        function tambahTugas() {
-            const teks = document.getElementById('input-tugas-baru').value.trim();
-            if (!teks) return;
-
-            state.tugasList.push({ teks, completed: false });
-            document.getElementById('input-tugas-baru').value = '';
-            saveState();
-        }
-
-        function toggleTugas(idx) {
-            state.tugasList[idx].completed = !state.tugasList[idx].completed;
-            saveState();
-        }
-
-        // Hapus tugas yang selesai saja atau hapus satu per satu
-        function hapusTugas(idx) {
-            state.tugasList.splice(idx, 1);
-            saveState();
-        }
-
-        function tambahAgendaBulanan() {
-            const tanggal = document.getElementById('agenda-tanggal').value;
-            const nama = document.getElementById('agenda-nama').value.trim();
-
-            if (!tanggal || !nama) return alert('Silakan pilih tanggal dan isi nama agenda!');
-
-            state.agendaBulanan.push({ tanggal, nama });
-            document.getElementById('agenda-tanggal').value = '';
-            document.getElementById('agenda-nama').value = '';
-            saveState();
-        }
-
-        function hapusAgenda(idx) {
-            state.agendaBulanan.splice(idx, 1);
-            saveState();
-        }
-
-        // --- UTILITY SCRIPT (JAM & MUSIC) ---
-        function updateClock() {
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const dateStr = now.toLocaleDateString('id-ID', options);
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            document.getElementById('live-clock').innerHTML = `<i class="fa-regular fa-clock mr-1 text-emerald-400"></i> ${dateStr} - ${timeStr} WIB`;
-
-            // Ganti greeting dinamis berdasarkan jam
-            const jam = now.getHours();
-            let greeting = "";
-            if (jam >= 5 && jam < 11) greeting = "Selamat pagi! Siap produktif hari ini?";
-            else if (jam >= 11 && jam < 15) greeting = "Selamat siang! Jangan lupa istirahat sejenak.";
-            else if (jam >= 15 && jam < 18) greeting = "Selamat sore! Selesaikan aktivitasmu dengan baik.";
-            else greeting = "Selamat malam! Waktunya evaluasi hari ini.";
-
-            document.getElementById('greeting-text').innerText = greeting;
-        }
-
-        function toggleMusic() {
-            const audio = document.getElementById('lofi-audio');
-            const btn = document.getElementById('btn-play-music');
-            if (audio.paused) {
-                audio.play();
-                btn.innerText = "Pause";
-                btn.className = "px-3 py-1 bg-red-600 hover:bg-red-500 text-xs font-semibold rounded text-white transition-all";
-            } else {
-                audio.pause();
-                btn.innerText = "Play";
-                btn.className = "px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold rounded text-white transition-all";
-            }
-        }
-
-        // Jalankan render awal & setup interval jam
-        setInterval(updateClock, 1000);
-        updateClock();
-        renderAll();
-    </script>
+<script src="script.js"></script>
 </body>
 </html>
