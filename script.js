@@ -1,487 +1,425 @@
-// --- STATE / DATA Awal ---
-let tabungan = 0;
+/* ===================================================================
+   RUANG — Personal Life Dashboard — app logic
+   All data is stored locally in this browser via localStorage.
+=================================================================== */
 
-// --- ELEMENT SELECTOR ---
-const totalTabunganEl = document.getElementById('total-tabungan');
-const inputAwalEl = document.getElementById('input-awal');
-const btnSetAwal = document.getElementById('btn-set-awal');
-
-const namaBarangEl = document.getElementById('nama-barang');
-const nominalBelanjaEl = document.getElementById('nominal-belanja');
-const btnKurangTabungan = document.getElementById('btn-kurang-tabungan');
-
-const inputTugasEl = document.getElementById('input-tugas');
-const btnTambahTugas = document.getElementById('btn-tambah-tugas');
-const listTugasEl = document.getElementById('list-tugas');
-
-const tanggalAgendaEl = document.getElementById('tanggal-agenda');
-const namaAgendaEl = document.getElementById('nama-agenda');
-const btnTambahAgenda = document.getElementById('btn-tambah-agenda');
-const listAgendaEl = document.getElementById('list-agenda');
-
-// --- 1. FUNGSI SAKU TRACKER ---
-function updateUIAngka() {
-    totalTabunganEl.innerText = `Rp ${tabungan.toLocaleString('id-ID')}`;
-}
-
-btnSetAwal.addEventListener('click', () => {
-    const nilaiAwal = parseInt(inputAwalEl.value);
-    if (!isNaN(nilaiAwal) && nilaiAwal > 0) {
-        tabungan = nilaiAwal;
-        updateUIAngka();
-        inputAwalEl.value = '';
-    }
-});
-
-btnKurangTabungan.addEventListener('click', () => {
-    const nama = namaBarangEl.value.trim();
-    const nominal = parseInt(nominalBelanjaEl.value);
-
-    if (nama === '' || isNaN(nominal) || nominal <= 0) {
-        alert('Isi nama barang dan nominal dengan benar!');
-        return;
-    }
-
-    if (nominal > tabungan) {
-        alert('Tabungan kamu gak cukup buat jajan ini! 😭');
-        return;
-    }
-
-    tabungan -= nominal;
-    updateUIAngka();
-
-    // Reset input setelah berhasil
-    namaBarangEl.value = '';
-    nominalBelanjaEl.value = '';
-});
-
-// --- 2. FUNGSI TO-DO LIST (HARI INI NGAPAIN AJA) ---
-btnTambahTugas.addEventListener('click', () => {
-    const teksTugas = inputTugasEl.value.trim();
-    if (teksTugas === '') return;
-
-    const li = document.createElement('li');
-    li.innerHTML = `
-        <span>${teksTugas}</span>
-        <button onclick="this.parentElement.remove()" style="color: red; background: none; border: none; cursor: pointer;">✗</button>
-    `;
-    listTugasEl.appendChild(li);
-    inputTugasEl.value = '';
-});
-
-// --- 3. FUNGSI AGENDA BULANAN ---
-btnTambahAgenda.addEventListener('click', () => {
-    const tanggal = tanggalAgendaEl.value;
-    const agenda = namaAgendaEl.value.trim();
-
-    if (tanggal === '' || agenda === '') {
-        alert('Pilih tanggal dan isi nama agendanya dulu!');
-        return;
-    }
-
-    const li = document.createElement('li');
-    li.innerHTML = `<strong>${tanggal}</strong> - ${agenda}`;
-    listAgendaEl.appendChild(li);
-
-    // Reset input
-    tanggalAgendaEl.value = '';
-    namaAgendaEl.value = '';
-});
-// ================= STATE MANAGEMENT =================
-let appState = {
-    saldo: 0,
-    pengeluaran: [],
-    tugas: [],
-    agenda: []
+const STORE_KEYS = {
+  balance: 'ruang_balance',
+  balanceSet: 'ruang_balance_set',
+  expenses: 'ruang_expenses',
+  tasks: 'ruang_tasks',
+  agenda: 'ruang_agenda',
 };
 
-// Load data dari LocalStorage saat pertama kali web dibuka
-if(localStorage.getItem('dashboard_state')) {
-    appState = JSON.parse(localStorage.getItem('dashboard_state'));
-}
+const load = (key, fallback) => {
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+};
+const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 
-// Fungsi Simpan State Otomatis
-function saveState() {
-    localStorage.setItem('dashboard_state', JSON.stringify(appState));
-    renderUI();
-}
-
-// ================= RENDER INTERFACE UI =================
-function renderUI() {
-    // 1. Render Saldo
-    document.getElementById('display-saldo').innerText = `Rp ${appState.saldo.toLocaleString('id-ID')}`;
-
-    // 2. Render Riwayat Pengeluaran
-    const riwayatEl = document.getElementById('list-riwayat');
-    if (appState.pengeluaran.length === 0) {
-        riwayatEl.innerHTML = `<li class="empty-state">Belum ada pengeluaran.</li>`;
-    } else {
-        riwayatEl.innerHTML = appState.pengeluaran.map((item, idx) => `
-            <li>
-                <span>${item.nama}</span>
-                <span class="negatif">-Rp ${item.nominal.toLocaleString('id-ID')}</span>
-                <button onclick="hapusPengeluaran(${idx})">✗</button>
-            </li>
-        `).join('');
-    }
-
-    // 3. Render To-Do List
-    const tugasEl = document.getElementById('list-tugas');
-    tugasEl.innerHTML = appState.tugas.map((t, idx) => `
-        <li class="${t.selesai ? 'done' : ''}">
-            <span onclick="toggleTugas(${idx})">${t.teks}</span>
-            <button onclick="hapusTugas(${idx})">✗</button>
-        </li>
-    `).join('');
-
-    // 4. Render Agenda Bulanan
-    const agendaEl = document.getElementById('list-agenda');
-    agendaEl.innerHTML = appState.agenda.map((a, idx) => `
-        <li>
-            <span>📅 <strong>${a.tanggal}</strong> - ${a.nama}</span>
-            <button onclick="hapusAgenda(${idx})">✗</button>
-        </li>
-    `).join('');
-}
-
-// ================= CONTROLLER / ACTION HANDLING =================
-// Set Saldo Awal
-document.getElementById('btn-set-saldo').addEventListener('click', () => {
-    const val = parseInt(document.getElementById('input-saldo-awal').value);
-    if(!isNaN(val) && val >= 0) {
-        appState.saldo = val;
-        document.getElementById('input-saldo-awal').value = '';
-        saveState();
-    }
-});
-
-// Potong Saldo (Belanja Baru)
-document.getElementById('btn-potong-saldo').addEventListener('click', () => {
-    const nama = document.getElementById('belanja-nama').value.trim();
-    const nominal = parseInt(document.getElementById('belanja-nominal').value);
-
-    if(!nama || isNaN(nominal) || nominal <= 0) return alert("Data belanja tidak valid!");
-    if(nominal > appState.saldo) return alert("Saldo kamu tidak mencukupi!");
-
-    appState.saldo -= nominal;
-    appState.pengeluaran.push({ nama, nominal });
-    
-    document.getElementById('belanja-nama').value = '';
-    document.getElementById('belanja-nominal').value = '';
-    saveState();
-});
-
-// Tambah Tugas Harian
-document.getElementById('btn-tambah-tugas').addEventListener('click', () => {
-    const teks = document.getElementById('input-tugas').value.trim();
-    if(!teks) return;
-    appState.tugas.push({ teks, selesai: false });
-    document.getElementById('input-tugas').value = '';
-    saveState();
-});
-
-// Tambah Agenda Bulanan
-document.getElementById('btn-tambah-agenda').addEventListener('click', () => {
-    const tanggal = document.getElementById('agenda-tanggal').value;
-    const nama = document.getElementById('agenda-nama').value.trim();
-    if(!tanggal || !nama) return alert("Lengkapi tanggal dan nama agenda!");
-    
-    appState.agenda.push({ tanggal, nama });
-    document.getElementById('agenda-tanggal').value = '';
-    document.getElementById('agenda-nama').value = '';
-    saveState();
-});
-
-// Fungsi Hapus (Global Helpers)
-window.hapusPengeluaran = (idx) => { appState.pengeluaran.splice(idx, 1); saveState(); };
-window.hapusTugas = (idx) => { appState.tugas.splice(idx, 1); saveState(); };
-window.toggleTugas = (idx) => { appState.tugas[idx].selesai = !appState.tugas[idx].selesai; saveState(); };
-window.hapusAgenda = (idx) => { appState.agenda.splice(idx, 1); saveState(); };
-
-
-// ================= FITUR BOT INTELLIGENCE AI (OPENROUTER) =================
-function toggleBotChat() {
-    document.getElementById('bot-widget').classList.toggle('minimized');
-}
-
-document.getElementById('btn-send-bot').addEventListener('click', handleBotChat);
-document.getElementById('bot-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleBotChat(); });
-
-async function handleBotChat() {
-    const inputEl = document.getElementById('bot-input');
-    const userText = inputEl.value.trim();
-    if(!userText) return;
-
-    appendMessage(userText, 'user');
-    inputEl.value = '';
-
-    // Tampilkan loading placeholder
-    const loadingId = appendMessage('Mengetik...', 'bot');
-
-    try {
-        // Panggil endpoint OpenRouter API
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer KEY_OPENROUTER_KAMU_DISINI", // Ganti dengan OpenRouter API Key-mu
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": "google/gemini-2.5-flash", // Atau model andalanmu yang lain
-                "messages": [
-                    {
-                        "role": "system", 
-                        "content": `Kamu adalah bot asisten evaluasi pribadi terintegrasi. Bantu user mereview kegiatannya. Data user saat ini: Saldo Sisa Rp ${appState.saldo}, Tugas Terdaftar: ${appState.tugas.length} buah.`
-                    },
-                    { "role": "user", "content": userText }
-                ]
-            })
-        });
-
-        const data = await response.json();
-        const botReply = data.choices[0].message.content;
-        
-        // Ganti teks loading dengan respon asli dari AI
-        document.getElementById(loadingId).innerText = botReply;
-    } catch (error) {
-        document.getElementById(loadingId).innerText = "Aduh, koneksi bot ke OpenRouter lagi terganggu nih.";
-        console.error(error);
-    }
-}
-
-function appendMessage(text, sender) {
-    const msgBox = document.getElementById('bot-messages');
-    const msgDiv = document.createElement('div');
-    const uniqueId = 'msg-' + Date.now();
-    msgDiv.className = `msg ${sender}`;
-    msgDiv.id = uniqueId;
-    msgDiv.innerText = text;
-    msgBox.appendChild(msgDiv);
-    msgBox.scrollTop = msgBox.scrollHeight;
-    return uniqueId;
-}
-
-// Inisialisasi Tampilan Pertama Kali
-renderUI();
-// ==========================================
-// 1. STATE MANAGEMENT & LOCAL STORAGE
-// ==========================================
-let sakuState = {
-    saldo: 0,
-    pengeluaran: [],
-    tugas: [],
-    agenda: []
+let state = {
+  balance: load(STORE_KEYS.balance, 0),
+  balanceSet: load(STORE_KEYS.balanceSet, false),
+  expenses: load(STORE_KEYS.expenses, []),
+  tasks: load(STORE_KEYS.tasks, []),
+  agenda: load(STORE_KEYS.agenda, []),
 };
 
-// Load data otomatis saat halaman dibuka
-if (localStorage.getItem('saku_dashboard_data')) {
-    sakuState = JSON.parse(localStorage.getItem('saku_dashboard_data'));
+const fmtRupiah = (n) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+/* ================= NAVIGATION ================= */
+const navItems = document.querySelectorAll('.nav-item');
+const panels = document.querySelectorAll('.panel');
+
+function goToPanel(target){
+  panels.forEach(p => p.classList.toggle('is-active', p.id === target));
+  navItems.forEach(n => n.classList.toggle('is-active', n.dataset.target === target));
+  document.querySelector('.sidebar')?.classList.remove('is-open');
 }
 
-function saveAndRefresh() {
-    localStorage.setItem('saku_dashboard_data', JSON.stringify(sakuState));
-    updateRenderUI();
+navItems.forEach(btn => {
+  btn.addEventListener('click', () => goToPanel(btn.dataset.target));
+});
+
+document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.toggle('is-open');
+});
+
+/* ================= CLOCK & GREETING ================= */
+const dateLine = document.getElementById('dateLine');
+const clockText = document.getElementById('clockText');
+const greetingText = document.getElementById('greetingText');
+
+function updateClock(){
+  const now = new Date();
+  const hour = now.getHours();
+  let greet = 'Selamat malam';
+  if (hour < 10) greet = 'Selamat pagi';
+  else if (hour < 15) greet = 'Selamat siang';
+  else if (hour < 18) greet = 'Selamat sore';
+  greetingText.textContent = `${greet}, semangat beraktivitas!`;
+
+  dateLine.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  clockText.textContent = now.toLocaleTimeString('id-ID');
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ================= SAKU TRACKER ================= */
+const balanceDisplay = document.getElementById('balanceDisplay');
+const overviewBalance = document.getElementById('overviewBalance');
+const overviewBalanceFoot = document.getElementById('overviewBalanceFoot');
+const setBalanceForm = document.getElementById('setBalanceForm');
+const initialBalanceInput = document.getElementById('initialBalanceInput');
+const setBalanceBtn = document.getElementById('setBalanceBtn');
+const expenseForm = document.getElementById('expenseForm');
+const receiptBody = document.getElementById('receiptBody');
+
+function renderBalance(){
+  balanceDisplay.textContent = fmtRupiah(state.balance);
+  overviewBalance.textContent = fmtRupiah(state.balance);
+  overviewBalanceFoot.textContent = state.balanceSet ? `${state.expenses.length} transaksi tercatat` : 'Belum diatur';
+  setBalanceForm.style.display = state.balanceSet ? 'none' : 'flex';
 }
 
-// ==========================================
-// 2. FUNGSI RENDER KE LAYAR UTAMA
-// ==========================================
-function updateRenderUI() {
-    // Render Sisa Tabungan
-    const saldoEl = document.querySelector('.balance-box h1, #total-tabungan, h1:contains("Rp")');
-    if (saldoEl) {
-        saldoEl.innerText = `Rp ${sakuState.saldo.toLocaleString('id-ID')}`;
-    }
-
-    // Render Riwayat Pengeluaran
-    const riwayatContainer = document.querySelector('.log-list, #list-riwayat');
-    if (riwayatContainer) {
-        if (sakuState.pengeluaran.length === 0) {
-            riwayatContainer.innerHTML = `<p class="empty-state" style="color: #666; font-size: 0.9rem;">Belum ada pengeluaran.</p>`;
-        } else {
-            riwayatContainer.innerHTML = sakuState.pengeluaran.map((item, idx) => `
-                <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #1a2638;">
-                    <span>${item.nama}</span>
-                    <span style="color: #d32f2f;">-Rp ${item.nominal.toLocaleString('id-ID')}</span>
-                    <button onclick="hapusItem('pengeluaran', ${idx})" style="background:none; border:none; color:#ff4444; cursor:pointer;">✗</button>
-                </div>
-            `).join('');
-        }
-    }
-
-    // Render To-Do List Harian
-    const todoContainer = document.querySelector('.todo-list, #list-tugas');
-    if (todoContainer) {
-        todoContainer.innerHTML = sakuState.tugas.map((t, idx) => `
-            <li style="display:flex; justify-content:between; margin: 5px 0; text-decoration: ${t.selesai ? 'line-through' : 'none'}">
-                <span onclick="toggleTugas(${idx})" style="cursor:pointer; flex-grow:1;">${t.teks}</span>
-                <button onclick="hapusItem('tugas', ${idx})" style="background:none; border:none; color:#ff4444; cursor:pointer;">✗</button>
-            </li>
-        `).join('');
-    }
-
-    // Render Agenda Bulanan
-    const agendaContainer = document.querySelector('.agenda-list, #list-agenda');
-    if (agendaContainer) {
-        agendaContainer.innerHTML = sakuState.agenda.map((a, idx) => `
-            <div style="padding: 5px 0; border-bottom: 1px solid #1a2638; display:flex; justify-content:space-between;">
-                <span>📅 <strong>${a.tanggal}</strong> - ${a.nama}</span>
-                <button onclick="hapusItem('agenda', ${idx})" style="background:none; border:none; color:#ff4444; cursor:pointer;">✗</button>
-            </div>
-        `).join('');
-    }
-}
-
-// ==========================================
-// 3. LOGIKA TOMBOL & AKSI
-// ==========================================
-
-// Tombol Set Tabungan Awal
-const btnSet = document.querySelector('button.btn-primary, button:contains("Set")') || document.querySelectorAll('button')[0];
-if (btnSet) {
-    btnSet.addEventListener('click', () => {
-        const inputAwal = document.querySelector('input[placeholder*="500000"]');
-        if (inputAwal && inputAwal.value) {
-            sakuState.saldo = parseInt(inputAwal.value);
-            inputAwal.value = '';
-            saveAndRefresh();
-        }
-    });
-}
-
-// Tombol Kurangi Tabungan
-const btnKurang = document.querySelector('.btn-danger, button:contains("Kurangi")') || document.querySelector('button[style*="red"]');
-if (btnKurang) {
-    btnKurang.addEventListener('click', () => {
-        const inputNama = document.querySelector('input[placeholder*="Futsal, jajan"]');
-        const inputNominal = document.querySelector('input[placeholder*="25000"]');
-        
-        if (inputNama && inputNominal && inputNama.value && inputNominal.value) {
-            const nominal = parseInt(inputNominal.value);
-            if (nominal > sakuState.saldo) return alert("Tabungan tidak cukup!");
-            
-            sakuState.saldo -= nominal;
-            sakuState.pengeluaran.push({ nama: inputNama.value, nominal: nominal });
-            
-            inputNama.value = '';
-            inputNominal.value = '';
-            saveAndRefresh();
-        }
-    });
-}
-
-// Tombol Tambah Tugas Harian
-const btnTugas = document.querySelector('button:contains("Tambah")') || document.querySelectorAll('button')[1];
-if (btnTugas) {
-    btnTugas.addEventListener('click', () => {
-        const inputTugas = document.querySelector('input[placeholder*="tugas / agenda"]');
-        if (inputTugas && inputTugas.value) {
-            sakuState.tugas.push({ teks: inputTugas.value, selesai: false });
-            inputTugas.value = '';
-            saveAndRefresh();
-        }
-    });
-}
-
-// Tombol Masukkan ke Kalender (Agenda)
-const btnAgenda = document.querySelector('button:contains("Masukkan")') || document.querySelector('.btn-secondary-full');
-if (btnAgenda) {
-    btnAgenda.addEventListener('click', () => {
-        const inputTanggal = document.querySelector('input[type="date"]');
-        const inputNamaAgenda = document.querySelector('input[placeholder*="Turnamen Futsal, Rapat OSIS"]');
-        
-        if (inputTanggal && inputNamaAgenda && inputTanggal.value && inputNamaAgenda.value) {
-            sakuState.agenda.push({ tanggal: inputTanggal.value, nama: inputNamaAgenda.value });
-            inputTanggal.value = '';
-            inputNamaAgenda.value = '';
-            saveAndRefresh();
-        }
-    });
-}
-
-// Global Helpers untuk Hapus & Toggle
-window.hapusItem = (type, idx) => {
-    sakuState[type].splice(idx, 1);
-    saveAndRefresh();
-};
-window.toggleTugas = (idx) => {
-    sakuState.tugas[idx].selesai = !sakuState.tugas[idx].selesai;
-    saveAndRefresh();
-};
-
-// Jalankan render pertama kali saat web dimuat
-document.addEventListener('DOMContentLoaded', updateRenderUI);
-// Tambahkan UI Bot Melayang Secara Otomatis tanpa ngerusak HTML utama
-document.body.insertAdjacentHTML('beforeend', `
-    <div id="bot-fixed-widget" style="position:fixed; bottom:20px; right:20px; width:300px; background:#0d1624; border:1px solid #00e676; border-radius:10px; color:#fff; font-family:sans-serif; z-index:99999; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-        <div id="bot-head" style="background:#142236; padding:10px; cursor:pointer; border-radius:10px 10px 0 0; display:flex; justify-content:space-between; align-items:center;">
-            <span>🤖 <strong>Evaluator Bot</strong></span>
-            <span id="bot-toggle-icon">▼</span>
-        </div>
-        <div id="bot-content" style="display:block;">
-            <div id="bot-chat-box" style="height:200px; padding:10px; overflow-y:auto; font-size:0.85rem; border-bottom:1px solid #1a2638;">
-                <div style="background:#142236; padding:6px 10px; border-radius:5px; margin-bottom:8px; max-width:85%;">Halo! Ada progres apa hari ini? Yuk evaluasi bareng.</div>
-            </div>
-            <div style="padding:8px; display:flex; gap:5px; background:#09101a;">
-                <input type="text" id="chat-bot-input" placeholder="Ketik evaluasi..." style="flex-grow:1; background:#142236; border:1px solid #1a2638; color:#fff; padding:6px; border-radius:4px; outline:none; font-size:0.85rem;">
-                <button id="chat-bot-send" style="background:#00e676; border:none; color:#000; font-weight:bold; padding:0 10px; border-radius:4px; cursor:pointer; font-size:0.85rem;">Kirim</button>
-            </div>
-        </div>
+function renderReceipt(){
+  if (state.expenses.length === 0){
+    receiptBody.innerHTML = '<p class="empty-line">Belum ada pengeluaran tercatat.</p>';
+    return;
+  }
+  receiptBody.innerHTML = state.expenses.slice().reverse().map(exp => `
+    <div class="receipt-row">
+      <span>
+        <span class="receipt-desc">${escapeHTML(exp.desc)}</span>
+        <span class="receipt-date">${new Date(exp.date).toLocaleDateString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}</span>
+      </span>
+      <span class="receipt-amount">-${fmtRupiah(exp.amount)}</span>
     </div>
-`);
+  `).join('');
+}
 
-// Logic Toggle Minimize Bot
-const botHead = document.getElementById('bot-head');
-const botContent = document.getElementById('bot-content');
-const botToggleIcon = document.getElementById('bot-toggle-icon');
+function escapeHTML(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
 
-botHead.addEventListener('click', () => {
-    if (botContent.style.display === 'none') {
-        botContent.style.display = 'block';
-        botToggleIcon.innerText = '▼';
-    } else {
-        botContent.style.display = 'none';
-        botToggleIcon.innerText = '▲';
-    }
+setBalanceBtn.addEventListener('click', () => {
+  const val = parseFloat(initialBalanceInput.value);
+  if (isNaN(val) || val < 0) return;
+  state.balance = val;
+  state.balanceSet = true;
+  save(STORE_KEYS.balance, state.balance);
+  save(STORE_KEYS.balanceSet, state.balanceSet);
+  initialBalanceInput.value = '';
+  renderBalance();
 });
 
-// Logic Kirim Chat Bot (Hubungkan ke OpenRouter)
-document.getElementById('chat-bot-send').addEventListener('click', panggilBotAI);
-document.getElementById('chat-bot-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') panggilBotAI(); });
+expenseForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const desc = document.getElementById('expenseDesc').value.trim();
+  const amount = parseFloat(document.getElementById('expenseAmount').value);
+  if (!desc || isNaN(amount) || amount <= 0) return;
 
-async function panggilBotAI() {
-    const inputChat = document.getElementById('chat-bot-input');
-    const txt = inputChat.value.trim();
-    if(!txt) return;
+  state.balance -= amount;
+  state.expenses.push({ desc, amount, date: new Date().toISOString() });
+  save(STORE_KEYS.balance, state.balance);
+  save(STORE_KEYS.expenses, state.expenses);
 
-    const box = document.getElementById('bot-chat-box');
-    box.innerHTML += `<div style="background:#00e676; color:#000; padding:6px 10px; border-radius:5px; margin-bottom:8px; max-width:85%; align-self:flex-end; margin-left:auto; text-align:right;">${txt}</div>`;
-    inputChat.value = '';
-    box.scrollTop = box.scrollHeight;
+  expenseForm.reset();
+  renderBalance();
+  renderReceipt();
+});
 
-    // Loading teks
-    const loadId = 'load-' + Date.now();
-    box.innerHTML += `<div id="${loadId}" style="background:#142236; padding:6px 10px; border-radius:5px; margin-bottom:8px; max-width:85%;">Mengetik...</div>`;
-    
-    try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer KEY_OPENROUTER_KAMU", // Isi API Key OpenRouter kamu di sini
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": "google/gemini-2.5-flash",
-                "messages": [
-                    { "role": "system", "content": "Kamu adalah asisten evaluator harian yang suportif dan santai." },
-                    { "role": "user", "content": txt }
-                ]
-            })
-        });
-        const data = await res.json();
-        document.getElementById(loadId).innerText = data.choices[0].message.content;
-    } catch (err) {
-        document.getElementById(loadId).innerText = "Gagal terkoneksi ke bot.";
-    }
-    box.scrollTop = box.scrollHeight;
+/* ================= TUGAS HARIAN ================= */
+const taskForm = document.getElementById('taskForm');
+const taskInput = document.getElementById('taskInput');
+const taskCategory = document.getElementById('taskCategory');
+const taskList = document.getElementById('taskList');
+const taskProgressFill = document.getElementById('taskProgressFill');
+const taskProgressLabel = document.getElementById('taskProgressLabel');
+const ringFill = document.getElementById('ringFill');
+const ringPercent = document.getElementById('ringPercent');
+const ringFoot = document.getElementById('ringFoot');
+
+const CIRC = 264;
+const catLabel = { tugas: 'Tugas', latihan: 'Latihan', jadwal: 'Jadwal' };
+
+function renderTasks(){
+  const total = state.tasks.length;
+  const done = state.tasks.filter(t => t.done).length;
+  const pct = total === 0 ? 0 : Math.round((done/total)*100);
+
+  if (total === 0){
+    taskList.innerHTML = '<li class="empty-line">Semua tugas beres! Kamu bebas bersantai sekarang. 🙌</li>';
+  } else {
+    taskList.innerHTML = state.tasks.map(t => `
+      <li class="${t.done ? 'is-done' : ''}" data-id="${t.id}">
+        <button class="task-check" data-action="toggle" data-id="${t.id}" aria-label="Tandai selesai">
+          <svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>
+        </button>
+        <span class="task-text">${escapeHTML(t.text)}</span>
+        <span class="task-cat">${catLabel[t.category] || t.category}</span>
+        <button class="task-del" data-action="delete" data-id="${t.id}" aria-label="Hapus tugas">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </li>
+    `).join('');
+  }
+
+  taskProgressFill.style.width = pct + '%';
+  taskProgressLabel.textContent = `${done} / ${total} selesai`;
+
+  ringFill.style.strokeDashoffset = CIRC - (CIRC * pct/100);
+  ringPercent.textContent = pct + '%';
+  ringFoot.textContent = `${done} dari ${total} selesai`;
 }
+
+taskForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = taskInput.value.trim();
+  if (!text) return;
+  state.tasks.push({ id: Date.now(), text, category: taskCategory.value, done: false });
+  save(STORE_KEYS.tasks, state.tasks);
+  taskForm.reset();
+  renderTasks();
+});
+
+taskList.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  if (btn.dataset.action === 'toggle'){
+    const t = state.tasks.find(t => t.id === id);
+    if (t) t.done = !t.done;
+  } else if (btn.dataset.action === 'delete'){
+    state.tasks = state.tasks.filter(t => t.id !== id);
+  }
+  save(STORE_KEYS.tasks, state.tasks);
+  renderTasks();
+});
+
+/* ================= AGENDA BULANAN ================= */
+const agendaForm = document.getElementById('agendaForm');
+const agendaInput = document.getElementById('agendaInput');
+const agendaDate = document.getElementById('agendaDate');
+const agendaList = document.getElementById('agendaList');
+const upcomingList = document.getElementById('upcomingList');
+const overviewAgendaCount = document.getElementById('overviewAgendaCount');
+
+function daysFromNow(dateStr){
+  const diff = (new Date(dateStr) - new Date(todayISO()));
+  return Math.round(diff / 86400000);
+}
+
+function renderAgenda(){
+  const sorted = state.agenda.slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+  const within30 = sorted.filter(a => {
+    const d = daysFromNow(a.date);
+    return d >= 0 && d <= 30;
+  });
+
+  if (sorted.length === 0){
+    agendaList.innerHTML = '<li class="empty-line">Belum ada agenda jangka panjang yang dicatat.</li>';
+  } else {
+    agendaList.innerHTML = sorted.map(a => `
+      <li>
+        <span>${escapeHTML(a.text)}</span>
+        <span>
+          <span class="agenda-badge">${new Date(a.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'})} · H-${Math.max(daysFromNow(a.date),0)}</span>
+          <button class="agenda-del" data-id="${a.id}" aria-label="Hapus agenda">✕</button>
+        </span>
+      </li>
+    `).join('');
+  }
+
+  overviewAgendaCount.textContent = within30.length;
+
+  if (within30.length === 0){
+    upcomingList.innerHTML = '<li class="empty-line">Belum ada agenda yang dicatat.</li>';
+  } else {
+    upcomingList.innerHTML = within30.slice(0,5).map(a => `
+      <li>
+        <span>${escapeHTML(a.text)}</span>
+        <span class="agenda-badge">H-${daysFromNow(a.date)}</span>
+      </li>
+    `).join('');
+  }
+}
+
+agendaForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = agendaInput.value.trim();
+  const date = agendaDate.value;
+  if (!text || !date) return;
+  state.agenda.push({ id: Date.now(), text, date });
+  save(STORE_KEYS.agenda, state.agenda);
+  agendaForm.reset();
+  renderAgenda();
+});
+
+agendaList.addEventListener('click', (e) => {
+  const btn = e.target.closest('.agenda-del');
+  if (!btn) return;
+  state.agenda = state.agenda.filter(a => a.id !== Number(btn.dataset.id));
+  save(STORE_KEYS.agenda, state.agenda);
+  renderAgenda();
+});
+
+/* ================= FOKUS & LOFI ================= */
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const vinyl = document.getElementById('vinyl');
+const miniPlayBtn = document.getElementById('miniPlayBtn');
+const miniBars = document.querySelector('.mini-bars');
+const miniIconPlay = miniPlayBtn.querySelector('.icon-play');
+const miniIconPause = miniPlayBtn.querySelector('.icon-pause');
+
+function setPlayingUI(isPlaying){
+  vinyl.classList.toggle('is-spinning', isPlaying);
+  miniBars.classList.toggle('is-playing', isPlaying);
+  miniIconPlay.hidden = isPlaying;
+  miniIconPause.hidden = !isPlaying;
+  playBtn.textContent = isPlaying ? '⏸ Jeda' : '▶ Putar';
+}
+
+function togglePlay(){
+  if (audio.paused){
+    audio.play().catch(() => {});
+  } else {
+    audio.pause();
+  }
+}
+playBtn.addEventListener('click', togglePlay);
+miniPlayBtn.addEventListener('click', togglePlay);
+audio.addEventListener('play', () => setPlayingUI(true));
+audio.addEventListener('pause', () => setPlayingUI(false));
+
+/* ---- Pomodoro timer ---- */
+const timerDisplay = document.getElementById('timerDisplay');
+const timerStartBtn = document.getElementById('timerStartBtn');
+const timerResetBtn = document.getElementById('timerResetBtn');
+const modeBtns = document.querySelectorAll('.mode-btn');
+
+let timerMins = 25;
+let secondsLeft = timerMins * 60;
+let timerInterval = null;
+
+function renderTimer(){
+  const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+  const s = (secondsLeft % 60).toString().padStart(2,'0');
+  timerDisplay.textContent = `${m}:${s}`;
+}
+renderTimer();
+
+timerStartBtn.addEventListener('click', () => {
+  if (timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerStartBtn.textContent = 'Mulai';
+    return;
+  }
+  timerStartBtn.textContent = 'Jeda';
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerStartBtn.textContent = 'Mulai';
+      secondsLeft = 0;
+    }
+    renderTimer();
+  }, 1000);
+});
+
+timerResetBtn.addEventListener('click', () => {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerStartBtn.textContent = 'Mulai';
+  secondsLeft = timerMins * 60;
+  renderTimer();
+});
+
+modeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    modeBtns.forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    timerMins = Number(btn.dataset.mins);
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerStartBtn.textContent = 'Mulai';
+    secondsLeft = timerMins * 60;
+    renderTimer();
+  });
+});
+
+/* ================= EVALUATOR BOT ================= */
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const chatLog = document.getElementById('chatLog');
+
+function addChatMsg(text, who){
+  const div = document.createElement('div');
+  div.className = `chat-msg ${who}`;
+  div.innerHTML = who === 'bot'
+    ? `<span class="chat-avatar">🤖</span><p></p>`
+    : `<span class="chat-avatar">🙂</span><p></p>`;
+  div.querySelector('p').textContent = text;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function evaluateProgress(){
+  const total = state.tasks.length;
+  const done = state.tasks.filter(t => t.done).length;
+  const pct = total === 0 ? 0 : Math.round((done/total)*100);
+  const spent = state.expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  let taskLine;
+  if (total === 0) taskLine = 'Belum ada tugas yang dicatat hari ini.';
+  else if (pct === 100) taskLine = `Mantap, semua ${total} tugas hari ini sudah selesai! 🎉`;
+  else if (pct >= 50) taskLine = `Progress bagus: ${done} dari ${total} tugas selesai (${pct}%). Lanjutkan!`;
+  else taskLine = `Baru ${done} dari ${total} tugas selesai (${pct}%). Coba selesaikan satu lagi sekarang.`;
+
+  let sakuLine;
+  if (!state.balanceSet) sakuLine = 'Saku Tracker belum diatur, jadi belum bisa dievaluasi.';
+  else if (spent === 0) sakuLine = 'Belum ada pengeluaran tercatat hari ini, keuanganmu aman.';
+  else sakuLine = `Total pengeluaran tercatat: ${fmtRupiah(spent)}, sisa tabungan ${fmtRupiah(state.balance)}.`;
+
+  return `${taskLine} ${sakuLine}`;
+}
+
+function botReply(userText){
+  const t = userText.toLowerCase();
+  if (t.includes('evaluasi') || t.includes('progress') || t.includes('gimana')){
+    return evaluateProgress();
+  }
+  if (t.includes('capek') || t.includes('lelah') || t.includes('malas')){
+    return 'Wajar kok kalau capek. Coba istirahat sebentar atau nyalain Lofi Focus di menu Fokus, lalu kembali lagi kalau sudah siap.';
+  }
+  if (t.includes('makasih') || t.includes('terima kasih')){
+    return 'Sama-sama! Semangat terus ya 💪';
+  }
+  if (t.includes('halo') || t.includes('hai') || t.includes('hi')){
+    return 'Halo juga! Ada yang mau dicatat atau dievaluasi hari ini?';
+  }
+  return 'Dicatat! Ketik "evaluasi" kapan saja kalau mau aku cek progress tugas dan tabunganmu.';
+}
+
+chatForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  addChatMsg(text, 'user');
+  chatInput.value = '';
+  setTimeout(() => addChatMsg(botReply(text), 'bot'), 350);
+});
+
+/* ================= INIT ================= */
+renderBalance();
+renderReceipt();
+renderTasks();
+renderAgenda();
