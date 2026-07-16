@@ -170,6 +170,95 @@
     </ul>
 </div>
             </div>
+            <!-- Gunakan layout grid atau flex yang sudah ada di dashboard-mu -->
+<div class="dashboard-container">
+    
+    <!-- Kolom Kiri: Saku Tracker -->
+    <div class="card saku-tracker-card">
+        <div class="card-header">
+            <span class="icon">💰</span> <h3>Saku Tracker</h3>
+            <span class="badge-status">Lokal Auto-Save</span>
+        </div>
+        <div class="balance-box">
+            <p class="label">SISA TABUNGANMU</p>
+            <h1 id="display-saldo">Rp 0</h1>
+        </div>
+        
+        <div class="input-group-row">
+            <input type="number" id="input-saldo-awal" placeholder="Contoh: 500000" class="custom-input">
+            <button id="btn-set-saldo" class="btn-primary">Set</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-belanja">
+            <h4>🛒 Catat Belanja Baru</h4>
+            <input type="text" id="belanja-nama" placeholder="Nama barang (cth: Futsal, jajan)" class="custom-input">
+            <input type="number" id="belanja-nominal" placeholder="Nominal (cth: 25000)" class="custom-input">
+            <button id="btn-potong-saldo" class="btn-danger">
+                <span class="icon">➖</span> Kurangi Tabungan
+            </button>
+        </div>
+
+        <div class="divider"></div>
+        
+        <h4>History Pengeluaran</h4>
+        <ul id="list-riwayat" class="log-list">
+            <!-- Riwayat belanja masuk sini -->
+            <li class="empty-state">Belum ada pengeluaran.</li>
+        </ul>
+    </div>
+
+    <!-- Kolom Kanan Atas: To-Do List -->
+    <div class="card todo-card">
+        <div class="card-header">
+            <span class="icon">📋</span> <h3>Hari Ini Ngapain Aja?</h3>
+        </div>
+        <p class="subtitle">Lacat tugas, latihan, dan jadwal harianmu.</p>
+        <div class="input-group-row">
+            <input type="text" id="input-tugas" placeholder="Tulis tugas / agenda..." class="custom-input">
+            <button id="btn-tambah-tugas" class="btn-primary">+ Tambah</button>
+        </div>
+        <ul id="list-tugas" class="todo-list">
+            <!-- Item daftar tugas -->
+        </ul>
+    </div>
+
+    <!-- Kolom Kanan Bawah: Agenda Bulanan -->
+    <div class="card agenda-card">
+        <div class="card-header">
+            <span class="icon">📅</span> <h3>Agenda Bulanan (30 Hari ke Depan)</h3>
+        </div>
+        <div class="input-group-grid">
+            <input type="date" id="agenda-tanggal" class="custom-input">
+            <input type="text" id="agenda-nama" placeholder="Contoh: Turnamen Futsal, Rapat OSIS" class="custom-input">
+        </div>
+        <button id="btn-tambah-agenda" class="btn-secondary-full">Masukkan ke Kalender</button>
+        <ul id="list-agenda" class="agenda-list">
+            <!-- Agenda jangka panjang -->
+        </ul>
+    </div>
+
+</div>
+
+<!-- =============== FITUR BOT ASSISTANT CHAT =============== -->
+<div class="bot-chat-container" id="bot-widget">
+    <div class="bot-header" onclick="toggleBotChat()">
+        <div class="bot-avatar">🤖</div>
+        <div class="bot-info">
+            <h4>Evaluator Bot</h4>
+            <span class="status-dot"></span> <small>Online</small>
+        </div>
+        <button class="btn-minimize">▼</button>
+    </div>
+    <div class="bot-body" id="bot-messages">
+        <div class="msg bot">Halo! Saya asisten evaluasimu. Ada progress apa hari ini?</div>
+    </div>
+    <div class="bot-footer">
+        <input type="text" id="bot-input" placeholder="Tanya bot atau evaluasi hari ini...">
+        <button id="btn-send-bot">Kirim</button>
+    </div>
+</div>
         </div>
     </main>
 
