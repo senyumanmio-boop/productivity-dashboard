@@ -135,7 +135,40 @@
                         <p class="text-xs text-slate-500 italic">Belum ada agenda jangka panjang yang dicatat.</p>
                     </div>
                 </div>
+<!-- Bagian Saku Tracker & Belanja -->
+<div class="saku-tracker">
+    <h3>SISA TABUNGANMU</h3>
+    <h1 id="total-tabungan">Rp 0</h1>
+    
+    <input type="number" id="input-awal" placeholder="Contoh: 500000">
+    <button id="btn-set-awal">Set</button>
 
+    <h4>Catat Belanja Baru</h4>
+    <input type="text" id="nama-barang" placeholder="Nama barang (cth: Futsal)">
+    <input type="number" id="nominal-belanja" placeholder="Nominal (cth: 25000)">
+    <button id="btn-kurang-tabungan" class="btn-danger">- Kurang Tabungan</button>
+</div>
+
+<!-- Bagian To-Do List Harian -->
+<div class="hari-ini">
+    <h3>Hari Ini Ngapain Aja?</h3>
+    <input type="text" id="input-tugas" placeholder="Tulis tugas / agenda...">
+    <button id="btn-tambah-tugas">+ Tambah</button>
+    <ul id="list-tugas">
+        <!-- Tugas akan muncul di sini -->
+    </ul>
+</div>
+
+<!-- Bagian Agenda Bulanan -->
+<div class="agenda-bulanan">
+    <h3>Agenda Bulanan (30 Hari ke Depan)</h3>
+    <input type="date" id="tanggal-agenda">
+    <input type="text" id="nama-agenda" placeholder="Contoh: Turnamen Futsal, Rapat OSIS">
+    <button id="btn-tambah-agenda">Masukkan ke Kalender</button>
+    <ul id="list-agenda">
+        <!-- Agenda akan muncul di sini -->
+    </ul>
+</div>
             </div>
         </div>
     </main>
